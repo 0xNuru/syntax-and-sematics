@@ -9,7 +9,7 @@ This guide outlines the steps to set up a LiveKit server on AWS using the provid
 - AWS account with permissions to create EC2 instances
 - A domain with access to DNS settings
 - Two subdomains for LiveKit (e.g., `livekit.example.com` and `livekit-turn.example.com`)
-- LiveKit API key and secret (from any LiveKit Cloud Project or self-generated)
+- LiveKit API key and secret (copy format from any LiveKit Cloud Project or self-generated using open-ssl)
 
 ## Installation Steps
 
