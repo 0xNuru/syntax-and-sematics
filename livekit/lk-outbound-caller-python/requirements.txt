@@ -1,0 +1,10 @@
+livekit==1.0.6
+livekit-agents==1.0.13
+livekit-plugins-openai==1.0.13
+livekit-plugins-deepgram==1.0.13
+livekit-plugins-silero==1.0.13
+livekit-plugins-elevenlabs==1.0.13
+livekit-plugins-turn-detector==1.0.13
+livekit-plugins-cartesia==1.0.13
+torch
+python-dotenv~=1.0

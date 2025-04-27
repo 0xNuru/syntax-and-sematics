@@ -1,0 +1,7 @@
+{
+  "trunk": {
+    "name": "My outbound trunk",
+    "address": "ng.sip.****.com",
+    "numbers": ["+234******9893"]
+  }
+}
