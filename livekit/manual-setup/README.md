@@ -96,7 +96,7 @@ Here's a breakdown of the steps to manually configure LiveKit on your existing s
 **4. Create Configuration Files**
 
 - Use a text editor like `nano` to create the following files with the specified content.
-- **CRITICAL:** Remember to replace `APIKEYXXXXXXXXXX` and `SECRETKEYXXXXXXXXXXXXXXXXXXX` with your actual generated API Key and Secret.
+- **CRITICAL:** Remember to replace `APIKEYXXXXXXXXXXX` and `SECRETKEYXXXXXXXXXXXXXXXXXXX` with your actual generated API Key and Secret.
 - **CRITICAL:** Remember to replace `livekit.example.com` and `livekit-turn.example.com` with your actual domain names.
 
   - **LiveKit Config (`/opt/livekit/livekit.yaml`):**
