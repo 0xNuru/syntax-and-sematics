@@ -1,7 +1,5 @@
 # LiveKit Installation Guide for AWS
 
-## Author: [0xnuru](github.com/0xnuru)
-
 This guide outlines the steps to set up a LiveKit server on AWS using the provided cloud-init configuration.
 
 ## Prerequisites
