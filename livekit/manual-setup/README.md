@@ -49,7 +49,7 @@ Here's a breakdown of the steps to manually configure LiveKit on your existing s
 2.  **Firewall:** The script uses `iptables`. Check your current rules (`sudo iptables -L -v -n`) before adding new ones. These steps assume `iptables`.
 3.  **Permissions:** Most of these commands will require `sudo`. I'll need sudo access
 4.  **API Keys:** The script uses placeholder API keys (`APIKEYXXXXXXXXXX`, `SECRETKEYXXXXXXXXXXXXXXXXXXX`). **You MUST generate your own unique keys and replace these placeholders** in the configuration files (`livekit.yaml`, `egress.yaml`, `docker-compose.yaml`). ps. I typically just used one I've generated before from lk cloud project. just to maintain the format.
-5.  **Domain Names:** The configuration uses `livekit.example.com` and `livekit-turn.example.com` (based on your latest script). **Ensure you replace these with your actual domain names** that point correctly to your Debian server's public IP address in your DNS settings. Caddy will try to get Let's Encrypt certificates for these.
+5.  **Domain Names:** The configuration uses `livekit.example.com` and `livekit-turn.example.com` **Ensure you replace these with your actual domain names** that point correctly to your Debian server's public IP address in your DNS settings. Caddy will try to get Let's Encrypt certificates for these.
 6.  **OS:** These instructions assume a Debian/Ubuntu-based system.
 
 **Steps:**
