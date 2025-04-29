@@ -254,6 +254,57 @@ Here's a breakdown of the steps to manually configure LiveKit on your existing s
   ```
 
 - **Test and Reload Nginx:**
+
+  ```bash
+  sudo nginx -t
+  # If syntax is OK:
+  sudo systemctl reload nginx
+  ```
+
+- **Configure Nginx for LiveKit TURN (TCP Proxy):**
+
+  This requires adding a stream block, typically in the main nginx.conf or a file included from it (like in /etc/nginx/conf.d/).
+
+  ```bash
+  sudo nano /etc/nginx/nginx.conf
+  ```
+
+  Add or ensure a stream {} block exists (outside the http {} block):
+
+  ```nginx
+  # Add this block at the top level, alongside the 'http' block
+  stream {
+      # Define log format for stream if desired (optional)
+      # log_format basic '$remote_addr [$time_local] '
+      #                  '$protocol $status $bytes_sent $bytes_received '
+      #                  '$session_time';
+      # access_log /var/log/nginx/stream.log basic;
+
+      # SSL Configuration (repeated for the stream context)
+      ssl_certificate /etc/letsencrypt/live/livekit-turn.example.com/fullchain.pem; # <-- CHECK PATH & DOMAIN
+      ssl_certificate_key /etc/letsencrypt/live/livekit-turn.example.com/privkey.pem; # <-- CHECK PATH & DOMAIN
+      ssl_protocols TLSv1.2 TLSv1.3; # Specify protocols if needed
+      ssl_ciphers HIGH:!aNULL:!MD5;  # Specify ciphers if needed
+      # ssl_session_cache shared:SSL:10m; # Optional caching
+      # ssl_session_timeout 10m; # Optional timeout
+
+      # Server block for TURN over TLS
+      server {
+          listen 443 ssl; # Nginx listens on 443 for TURN domain
+          listen [::]:443 ssl;
+          # Ensure this matches the domain for SNI (Server Name Indication)
+          # Nginx uses SNI to differentiate this from the HTTP server on the same port.
+          # It implicitly uses the domain associated with the SSL certificate.
+
+          # Proxy TCP connections to the internal LiveKit TURN port
+          proxy_pass 127.0.0.1:5349;
+      }
+  }
+
+  ```
+
+  Test and reload the Nginx configuration:
+
   ```bash
   sudo nginx -t
   # If syntax is OK:
