@@ -37,4 +37,17 @@ OPENAI_TTS_CONFIGS = {
         model="tts-1-hd",
     )
     """
-} 
+}
+
+
+current outbound ai config:
+session = AgentSession(
+            stt=deepgram.STT(model="nova-3", language="multi"),
+            llm=openai.LLM(model="gpt-4o-mini"),
+            tts=openai.TTS(
+                voice="alloy",  # Options: alloy, echo, fable, onyx, nova, shimmer
+                model="tts-1-hd",  # "tts-1-hd" for higher quality
+            ),
+            vad=silero.VAD.load(),
+            turn_detection=MultilingualModel(),
+        ) 
