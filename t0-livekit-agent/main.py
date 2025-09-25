@@ -17,7 +17,8 @@ import os
 import asyncio
 from core import settings 
 from logger import setup_logging, get_logger, log_call_event
-from tensorzero import AsyncTensorZeroGateway
+from tensorzero import AsyncTensorZeroGateway, patch_openai_client
+from openai import AsyncOpenAI as AsyncOpenAIClient
 
 load_dotenv()
 
@@ -41,7 +42,38 @@ def prewarm(proc: agents.JobProcess):
         prefix_padding_duration=0.3,
     )
     proc.userdata["stt"] = deepgram.STT(model="nova-3", language="en")
-    proc.userdata["llm"] = openai.LLM(model="gpt-4.1-mini")
+    # Prefer TensorZero embedded gateway (patched OpenAI client); fallback to standalone; else default
+    # Use function-based model identifier per gateway requirements
+    T0_MODEL = "tensorzero::function_name::analyze_transcript"
+    try:
+        client = AsyncOpenAIClient()
+        if settings.OPENAI_API_KEY:
+            os.environ["OPENAI_API_KEY"] = settings.OPENAI_API_KEY
+        cfg_path = os.path.join(os.path.dirname(__file__), "config", "tensorzero.toml")
+        patch_openai_client(
+            client,
+            config_file=cfg_path,
+            clickhouse_url=settings.CLICKHOUSE_URL,
+            async_setup=False,
+        )
+        proc.userdata["llm"] = openai.LLM(model=T0_MODEL, client=client)
+        logger.info(
+            f"🧠 Using TensorZero embedded gateway (patched OpenAI client) | model={T0_MODEL}"
+        )
+    except Exception as e:
+        logger.warning(f"⚠️ Embedded gateway patch failed: {e}")
+        try:
+            base_url = settings.TENSORZERO_GATEWAY_URL.rstrip("/") + "/openai/v1"
+            proc.userdata["llm"] = openai.LLM(model=T0_MODEL, base_url=base_url)
+            logger.info(
+                f"🧠 Using TensorZero standalone gateway | base_url={base_url} | model={T0_MODEL}"
+            )
+        except Exception as e2:
+            logger.warning(
+                f"⚠️ TensorZero gateway configuration failed, falling back to default OpenAI: {e2}"
+            )
+            proc.userdata["llm"] = openai.LLM(model="gpt-4.1-mini")
+            logger.info("🧠 Using default OpenAI LLM")
     proc.userdata["tts"] = elevenlabs.TTS(
         voice_id="x86DtpnPPuq2BpEiKPRy",
         model="eleven_flash_v2_5",
@@ -53,9 +85,8 @@ def prewarm(proc: agents.JobProcess):
         if val:
             os.environ["OPENAI_API_KEY"] = val
 
-        proc.userdata["t0_gateway"] = AsyncTensorZeroGateway.build_embedded(
-            config_file="config/tensorzero.toml",
-            clickhouse_url=settings.CLICKHOUSE_URL,
+        proc.userdata["t0_gateway"] = AsyncTensorZeroGateway.build_http(
+            gateway_url=settings.TENSORZERO_GATEWAY_URL,
             async_setup=False,
         )
         logger.info("🧠 TensorZero gateway initialized in prewarm")
@@ -77,10 +108,6 @@ class Assistant(Agent):
             instructions = f"{instructions}\n\nMain instructions:\n{main_prompt}"
         
         super().__init__(instructions=instructions)
-
-
-def get_t0_gateway(ctx: agents.JobContext):
-    return ctx.proc.userdata.get("t0_gateway")
 
 
 async def entrypoint(ctx: agents.JobContext):
@@ -160,25 +187,6 @@ async def entrypoint(ctx: agents.JobContext):
     # Use prewarmed VAD model from userdata
     logger.info(f"✅ Using prewarmed VAD model (saved {ctx.proc.userdata.get('prewarm_time', 0):.3f}s)")
 
-    t0_gateway = get_t0_gateway(ctx)
-    if t0_gateway is not None:
-        try:
-            t0_response = await t0_gateway.inference(
-                function_name="analyze_transcript",
-                input={
-                    "messages": [
-                        {
-                            "role": "user",
-                            "content": "tell me a dad joke",
-                        }
-                    ],
-                },
-            )
-            logger.info(f"🔍 TensorZero response: {t0_response}")
-        except Exception as e:
-            logger.warning(f"⚠️ TensorZero inference failed: {e}")
-    else:
-        logger.warning("⚠️ TensorZero gateway is not available; skipping test inference")
 
     session = AgentSession(
         vad=ctx.proc.userdata["vad"],
@@ -193,7 +201,7 @@ async def entrypoint(ctx: agents.JobContext):
     )
 
     # Register TensorZero shutdown callback if available
-    t0_gateway = get_t0_gateway(ctx)
+    t0_gateway = ctx.proc.userdata.get("t0_gateway")
     if t0_gateway is not None:
         async def t0_shutdown():
             try:
