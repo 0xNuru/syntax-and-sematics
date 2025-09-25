@@ -1,0 +1,26 @@
+[project]
+name = "livekit-agent"
+version = "0.1.0"
+description = "Livekit agent for outbound ai"
+readme = "README.md"
+requires-python = ">=3.11.2"
+dependencies = [
+    "livekit==1.0.12",
+    "livekit-agents==1.2.5",
+    "livekit-plugins-openai==1.2.5",
+    "livekit-plugins-deepgram==1.2.5",
+    "livekit-plugins-silero==1.2.5",
+    "livekit-plugins-elevenlabs==1.2.5",
+    "livekit-plugins-google==1.2.5",
+    "livekit-plugins-turn-detector==1.2.5",
+    "livekit-plugins-cartesia==1.2.5",
+    "boto3>=1.38.18",
+    "torch",
+    "python-dotenv~=1.0",
+    "whispey==2.6.0",
+    "tensorzero==2025.9.4",
+    "python-decouple==3.8",
+    "pydantic-settings==2.11.0",
+]
+
+[project.optional-dependencies]

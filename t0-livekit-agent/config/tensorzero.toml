@@ -1,0 +1,15 @@
+[models.gpt_5_nano]
+routing = ["openai_provider"]
+
+[models.gpt_5_nano.providers.openai_provider]
+type="openai"
+model_name="gpt-5-nano-2025-08-07"
+
+
+[functions.analyze_transcript]
+type="chat"
+
+[functions.analyze_transcript.variants.gpt_5_nano]
+type="chat_completion"
+model="gpt_5_nano"
+weight=1.0

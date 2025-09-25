@@ -1,0 +1,7 @@
+{
+  "trunk": {
+    "name": "My outbound trunk",
+    "address": "ng.sip.africastalking.com",
+    "numbers": ["+2347080629893"]
+  }
+}
